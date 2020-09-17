@@ -1,7 +1,7 @@
 def label = "ArsenalDev-${UUID.randomUUID().toString()}"
 def isIpcRunningEnv = true
 def isEpcRunningEnv = false
-def mattermostDevIncomingUrl='http://10.220.185.200/hooks/mjpb9bwrkfn58yd94a98gzpr4a'
+def mattermostDevIncomingUrl=''
 
 String getBranchName(branch) {
     branchTemp=sh returnStdout:true ,script:"""echo "$branch" |sed -E "s#origin[0-9]*/##g" """
@@ -13,11 +13,11 @@ String getBranchName(branch) {
 
 podTemplate(label: label, serviceAccount: 'tiller', namespace: 'devops',
     containers: [
-        containerTemplate(name: 'build-tools', image: 'ktis-bastion01.container.ipc.kt.com:5000/alpine/build-tools:latest', ttyEnabled: true, command: 'cat', privileged: true, alwaysPullImage: true)
+        containerTemplate(name: 'build-tools', image: 'registry.ktdscoe.myds.me:5500/arsenal/build-tools:latest', ttyEnabled: true, command: 'cat', privileged: true, alwaysPullImage: true)
     ],
     volumes: [
         hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
-        nfsVolume(mountPath: '/home/jenkins', serverAddress: '10.217.67.145', serverPath: '/data/nfs/devops/jenkins-slave-pv', readOnly: false) 
+        persistentVolumeClaim(mountPath: '/home/jenkins', claimName: 'jenkins-slave-pvc', readOnly: false)
         ]
     ) {
 
@@ -48,8 +48,8 @@ podTemplate(label: label, serviceAccount: 'tiller', namespace: 'devops',
             print "branch : " + branch
             
             stage('Get Source') {
-                git url: "http://git.cz-dev.container.kt.co.kr/arsenal-suite/arsenal/arsenal-builder.git",
-                    credentialsId: 'gitlab-kt-credential',
+                git url: "https://gitlab.com/arsenal-portal/arsenal2.0/arsenal-builder.git",
+                    credentialsId: 'external-gitlab',
                     branch: "${branch}"
                     commitId = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
             }
@@ -83,16 +83,18 @@ podTemplate(label: label, serviceAccount: 'tiller', namespace: 'devops',
                 }
             }
 
+            def pushRegistry = params.pushRegistry
             stage('Build Docker image') {
                 container('build-tools') {
                     docker.withRegistry("${dockerRegistry}", 'cluster-registry-credentials') {
 
-                        sh "docker build -t ${image}:${tag} -f devops/jenkins/Dockerfile --build-arg sourceFile=`find build/libs -name '*.jar' | head -n 1` ."
-                        sh "docker push ${image}:${tag}"
-                        sh "docker tag ${image}:${tag} ${image}:latest"
-                        sh "docker push ${image}:latest"
-			sh "docker rmi ${image}:${tag}"
-			sh "docker rmi ${image}:latest"
+                        sh "docker build -t ${pushRegistry}/${image}:${tag} -f devops/jenkins/Dockerfile --build-arg sourceFile=`find build/libs -name '*.jar' | head -n 1` ."
+                        sh "docker push ${pushRegistry}/${image}:${tag}"
+                        sh "docker tag ${pushRegistry}/${image}:${tag} ${pushRegistry}/${image}:latest"
+                        sh "docker push ${pushRegistry}/${image}:latest"
+
+                        sh "docker rmi ${pushRegistry}/${image}:${tag}"
+                        sh "docker rmi ${pushRegistry}/${image}:latest"
                     }
                 }
             }

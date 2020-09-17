@@ -1,7 +1,7 @@
 def label = "ArsenalDev-${UUID.randomUUID().toString()}"
 def isIpcRunningEnv = true
 def isEpcRunningEnv = false
-def mattermostDevIncomingUrl='http://10.220.185.200/hooks/mjpb9bwrkfn58yd94a98gzpr4a'
+def mattermostDevIncomingUrl=''
 
 String getBranchName(branch) {
     branchTemp=sh returnStdout:true ,script:"""echo "$branch" |sed -E "s#origin/##g" """
@@ -13,11 +13,11 @@ String getBranchName(branch) {
 
 podTemplate(label: label, serviceAccount: 'tiller', namespace: 'devops',
     containers: [
-        containerTemplate(name: 'build-tools', image: 'ktis-bastion01.container.ipc.kt.com:5000/alpine/build-tools:latest', ttyEnabled: true, command: 'cat', privileged: true, alwaysPullImage: true)
+        containerTemplate(name: 'build-tools', image: 'registry.ktdscoe.myds.me:5500/arsenal/build-tools:latest', ttyEnabled: true, command: 'cat', privileged: true, alwaysPullImage: true),
     ],
     volumes: [
         hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
-        nfsVolume(mountPath: '/home/jenkins', serverAddress: '10.217.67.145', serverPath: '/data/nfs/devops/jenkins-slave-pv', readOnly: false) 
+        persistentVolumeClaim(mountPath: '/home/jenkins', claimName: 'jenkins-slave-pvc', readOnly: false)
         ]
     ) {
 
@@ -56,8 +56,8 @@ podTemplate(label: label, serviceAccount: 'tiller', namespace: 'devops',
                     git config --global credential.helper cache
                     git config --global push.default simple
                 """
-                git url: "http://git.cz-dev.container.kt.co.kr/arsenal-suite/arsenal/arsenal-builder.git",
-                    credentialsId: 'gitlab-kt-credential',
+                git url: "https://gitlab.com/arsenal-portal/arsenal2.0/arsenal-builder.git",
+                    credentialsId: 'external-gitlab',
                     branch: "${branchName}"
             
             }
@@ -68,7 +68,7 @@ podTemplate(label: label, serviceAccount: 'tiller', namespace: 'devops',
             def gitProjectUrl = props['gitProjectUrl']
 
             stage('Check Milestone'){
-                withCredentials([string(credentialsId: 'gitlab-kt-secret-token', variable: 'TOKEN')]){            
+                withCredentials([string(credentialsId: 'external-gitlab-token', variable: 'TOKEN')]){            
                     container('build-tools'){
                         result = sh returnStdout:true, script: """curl --header PRIVATE-TOKEN:$TOKEN ${gitProjectUrl}/milestones?state=active | jq -r '.[] | select(.title == "${milestone}") | .id'"""
                         try {
@@ -89,7 +89,7 @@ podTemplate(label: label, serviceAccount: 'tiller', namespace: 'devops',
             }
         
             stage('Check Tag'){
-                withCredentials([string(credentialsId: 'gitlab-kt-secret-token', variable: 'TOKEN')]){
+                withCredentials([string(credentialsId: 'external-gitlab-token', variable: 'TOKEN')]){
                     container('build-tools'){
                         result = sh returnStdout:true, script: """curl --header PRIVATE-TOKEN:$TOKEN ${gitProjectUrl}/repository/tags | jq -r '.[].name' | grep -w '^${milestone}\$' | wc -l"""
                         result = result.toInteger()
@@ -116,16 +116,17 @@ podTemplate(label: label, serviceAccount: 'tiller', namespace: 'devops',
                 }
             }
 
+            def pushRegistry = params.pushRegistry
             stage('Build Docker image') {
                 container('build-tools') {
                     docker.withRegistry("${dockerRegistry}", 'cluster-registry-credentials') {
 
-                        sh "docker build -t ${image}:${milestone} -f devops/jenkins/Dockerfile --build-arg sourceFile=`find build/libs -name '*.jar' | head -n 1` ."
-                        sh "docker push ${image}:${milestone}"
-                        sh "docker tag ${image}:${milestone} ${image}:latest"
-                        sh "docker push ${image}:latest"
-                        sh "docker rmi ${image}:${milestone}"
-                        sh "docker rmi ${image}:latest"
+                        sh "docker build -t ${pushRegistry}/${image}:${milestone} -f devops/jenkins/Dockerfile --build-arg sourceFile=`find build/libs -name '*.jar' | head -n 1` ."
+                        sh "docker push ${pushRegistry}/${image}:${milestone}"
+                        sh "docker tag ${pushRegistry}/${image}:${milestone} ${pushRegistry}/${image}:latest"
+                        sh "docker push ${pushRegistry}/${image}:latest"
+                        sh "docker rmi ${pushRegistry}/${image}:${milestone}"
+                        sh "docker rmi ${pushRegistry}/${image}:latest"
                     }
                 }
             }
@@ -134,7 +135,7 @@ podTemplate(label: label, serviceAccount: 'tiller', namespace: 'devops',
 
                 try {
                     withCredentials([
-                        [$class: 'UsernamePasswordMultiBinding', credentialsId: 'gitlab-kt-credential', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD']
+                        [$class: 'UsernamePasswordMultiBinding', credentialsId: 'external-gitlab-token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD']
                         ]) {
                         sh("git config credential.username ${env.GIT_USERNAME}")
                         sh("git config credential.helper '!echo password=\$GIT_PASSWORD; echo'")
@@ -160,7 +161,7 @@ podTemplate(label: label, serviceAccount: 'tiller', namespace: 'devops',
                 
                 // delete release branch & milestone close.
                 try {
-                    withCredentials([string(credentialsId: 'gitlab-kt-secret-token', variable: 'TOKEN')]){
+                    withCredentials([string(credentialsId: 'external-gitlab-token', variable: 'TOKEN')]){
                         container('build-tools'){
                             sh("curl --header PRIVATE-TOKEN:$TOKEN --request DELETE ${gitProjectUrl}/repository/branches/${branchName}")
                             sh("curl --header PRIVATE-TOKEN:$TOKEN --request PUT    ${gitProjectUrl}/milestones/${milestoneId}?state_event=close")
