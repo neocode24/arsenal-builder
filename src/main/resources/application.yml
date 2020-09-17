@@ -1,0 +1,85 @@
+# Server Port, Context
+server:
+  port: 8080
+  servlet:
+    contextPath: /apis
+
+
+# Common boot Configuration
+spring:
+  application:
+    name: builder
+  profiles:
+    active: local
+
+  back-end:
+    portal:
+      http-uri: http://arsenal.kt.co.kr/apis
+      token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MjUyNTY0Njg4NCwiaWF0IjoxNTkyNTI2ODg0fQ.sb2YzR3ReqMTIBCPaYgpYSWWqeoqHlQWqEejPWz_BFcTC6GNDGykcIiJb-Niod025qdIqVIO38VHkd3_A2J-6Q
+
+
+
+  devtools:
+    livereload:
+      enabled: true
+
+    # multipart size limit
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# health check
+management:
+  endpoints:
+    loggers:
+      enabled: true
+    web:
+      exposure:
+        include: health,loggers,metrics,prometheus
+
+
+
+# Logging config
+logging:
+  config: classpath:logback-spring.xml
+  path: log
+
+
+
+
+
+---
+spring:
+  profiles: dev
+
+  back-end:
+    portal:
+      http-uri: http://arsenal-portal-backend/apis
+      token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MjUyNTY0Njg4NCwiaWF0IjoxNTkyNTI2ODg0fQ.sb2YzR3ReqMTIBCPaYgpYSWWqeoqHlQWqEejPWz_BFcTC6GNDGykcIiJb-Niod025qdIqVIO38VHkd3_A2J-6Q
+
+# Logging config
+logging:
+  config: classpath:logback-spring-dev.xml
+  path: log
+  level:
+    org.springframework.data.mongodb.core.MongoTemplate: DEBUG
+
+
+---
+spring:
+  profiles: prd
+
+  back-end:
+    portal:
+      http-uri: http://arsenal-portal-backend/apis
+      token: eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MjUyNTY0Njg4NCwiaWF0IjoxNTkyNTI2ODg0fQ.sb2YzR3ReqMTIBCPaYgpYSWWqeoqHlQWqEejPWz_BFcTC6GNDGykcIiJb-Niod025qdIqVIO38VHkd3_A2J-6Q
+
+
+
+# Logging config
+logging:
+  config: classpath:logback-spring-prd.xml
+  path: log
+  level:
+    org.springframework.data.mongodb.core.MongoTemplate: INFO

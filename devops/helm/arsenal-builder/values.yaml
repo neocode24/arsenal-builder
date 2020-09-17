@@ -1,0 +1,182 @@
+# Default values for arsenal-dev.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+##=(Application 기본 작성 영역)============================================================###
+## Application 기본 정보 작성 영역 
+## 
+## version: Application Version 명
+## app: Application 이름 명시
+##
+##
+##=========================================================================================###
+version: latest
+app: arsenal-builder
+##=========================================================================================###
+
+
+
+#---------------------------------------------- charts
+# arsenal-portal
+replicaCount: 1
+
+securityContext:
+ runAsUser: 5001
+ runAsGroup: 5000
+
+
+
+imagePullSecrets: []
+
+containers:
+  - name: arsenal-builder
+    image:
+      name: docker-registry.default.svc:5000/devops/arsenal-builder:${version}
+      pullPolicy: Always
+    ports:
+    - name: http
+      containerPort: 8080
+      protocol: TCP
+    livenessProbe:
+      httpGet:
+        path: /actuator/health
+        port: /http
+      initialDelaySeconds: 60
+      periodSeconds: 15
+      timeoutSeconds: 1
+      successThreshold: 1
+      failureThreshold: 10
+    readinessProbe:
+      httpGet:
+        path: /actuator/health
+        port: /http
+      initialDelaySeconds: 15
+      periodSeconds: 15
+      timeoutSeconds: 1
+      successThreshold: 1
+      failureThreshold: 10
+    resources:
+      limits:
+        cpu: 1
+        memory: 1024Mi
+      requests:
+        cpu: 200m
+        memory: 512Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+
+configMap:
+  JAVA_OPTS: '
+    -Dspring.profiles.active=dev
+    -Dspring.back-end.portal.http-uri=http://arsenal-portal-backend/apis
+    -Dspring.back-end.portal.token=eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MjUyNTY0Njg4NCwiaWF0IjoxNTkyNTI2ODg0fQ.sb2YzR3ReqMTIBCPaYgpYSWWqeoqHlQWqEejPWz_BFcTC6GNDGykcIiJb-Niod025qdIqVIO38VHkd3_A2J-6Q
+    '
+
+
+service:
+  type: ClusterIP
+  port: 80
+
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: arsenal-builder.c01-okd.cz-tb.paas.kt.co.kr
+      paths:
+        - /
+
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+
+
+global:
+  # Arsenal 관련 host aliases 일괄 등록
+  hostAliases:
+  # API Link Studio 운영
+    - ip: "172.31.34.114"
+      hostnames:
+      - "apimanager.kt.co.kr"
+  # OKD 천안 DEV - Master
+    - ip: "10.217.67.167"
+      hostnames:
+      - "ktis-console.c01-okd.cz-tb.paas.kt.co.kr"
+  # OKD 천안 PRD - Master
+    - ip: "10.220.189.113"
+      hostnames:
+      - "ktis-console.c01-okd.cz.paas.kt.co.kr"
+  # OKD 븐딩 PRD - Master
+    - ip: "172.23.129.148"
+      hostnames:
+      - "ktis-console.c01-okd.bz.paas.kt.co.kr"
+  # OpenShift 천안 DEV - Master
+    - ip: "10.217.59.16"
+      hostnames:
+      - "ktis-console.container.ipc.kt.com"
+  # OpenShift 천안 PRD - Master
+    - ip: "10.220.184.78"
+      hostnames:
+      - "console.c01.cz.container.kt.co.kr"
+  # OpenShift 분당 PRD - Master
+    - ip: "172.23.128.20"
+      hostnames:
+      - "console.c01.bz.container.kt.co.kr"
+  # OKD 천안 DEV - Jenkins
+    - ip: "10.217.67.185"
+      hostnames:
+      - "jenkins-devops.c01-okd.cz-tb.paas.kt.co.kr"
+  # OKD 천안 PRD - Jenkins
+    - ip: "10.220.189.87"
+      hostnames:
+      - "jenkins-devops.c01-okd.cz.paas.kt.co.kr"
+  # OKD 분당 PRD - Jenkins
+    - ip: "172.23.129.150"
+      hostnames:
+      - "jenkins-devops.c01-okd.bz.paas.kt.co.kr"
+  # OpenShift 천안 DEV - Jenkins
+    - ip: "10.217.59.30"
+      hostnames:
+      - "jenkins-dev.container.ipc.kt.com"
+  # OpenShift 천안 PRD - Jenkins
+    - ip: "10.220.184.94"
+      hostnames:
+      - "jenkins-devops.c01.cz.container.kt.co.kr"
+  # OpenShift 분당 DEV - Jenkins
+    - ip: "172.23.128.21"
+      hostnames:
+      - "jenkins-devops.c01.bz.container.kt.co.kr"
+  # OKD 천안 DEV - Arsenal Collector
+    - ip: "10.217.67.185"
+      hostnames:
+      - "arsenal-collector.c01-okd.cz-tb.paas.kt.co.kr"
+      - "arsenal-collector-dev-latest.c01-okd.cz-tb.paas.kt.co.kr"
+  # OKD 천안 PRD - Arsenal Collector
+    - ip: "10.220.189.87"
+      hostnames:
+      - "arsenal-collector.c01-okd.cz.paas.kt.co.kr"
+  # OpenShift 천안 DEV - Exporter
+    - ip: "10.217.59.30"
+      hostnames:
+      - "arsenal-cluster-kafka-exporter.container.ipc.kt.com"
+  # OKD 천안 DEV - Exporter
+    - ip: "10.217.67.185"
+      hostnames:
+      - "arsenal-cluster-kafka-exporter.cz-okd-dev.arsenal.kt.co.kr"
+  # OKD 천안 PRD - Exporter
+    - ip: "10.220.189.87"
+      hostnames:
+      - "arsenal-cluster-kafka-exporter.c01-okd.cz.paas.kt.co.kr"
+  # OKD 분당 PRD - Exporter
+    - ip: "172.23.129.150"
+      hostnames:
+      - "arsenal-cluster-kafka-exporter.c01-okd.bz.paas.kt.co.kr"

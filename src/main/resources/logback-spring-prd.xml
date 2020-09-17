@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    
+    <jmxConfigurator/>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+    <!-- STDOUT Appedner -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                <!-- %highlight([%d{MM-dd HH:mm:ss.SSS}][%-24.-24thread][%-46.46logger][%4L][%-1.-1p] %m%n) -->
+                %highlight([%d{MM-dd HH:mm:ss.SSS}][%-18thread][%-40.40logger][%4L][%-1.-1p] %m%n)
+            </Pattern>
+        </layout>
+    </appender>
+
+    <!-- application Logger -->
+    <logger name="com.kt.arsenal" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- springframework Loggers -->
+    <logger name="org.springframework.core" level="ERROR" additivity="false" >
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.springframework.beans" level="ERROR" additivity="false" >
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.springframework.context" level="ERROR" additivity="false" >
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.springframework.web" level="ERROR" additivity="false" >
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.springframework.tx" level="ERROR" additivity="false" >
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.springframework.jdbc" level="ERROR" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <!-- jdbc loggers -->
+    <logger name="jdbc.sqltiming" level="ERROR" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+   <logger name="jdbc.sqlonly" level="ERROR"  additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="jdbc.resultsettable" level="ERROR" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.apache.ibatis" level="ERROR" additivity="false">
+       <appender-ref ref="STDOUT" />
+    </logger>
+
+    <!-- connection pool -->
+    <logger name="com.zaxxer.hikari" level="ERROR" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+    
+    <logger name="io.lettuce.core" level="ERROR" additivity="false">
+       <appender-ref ref="STDOUT" />
+    </logger>
+    
+    <logger name="net.sf.log4jdbc.log.slf4j" level="ERROR" additivity="false">
+       <appender-ref ref="STDOUT" />
+    </logger>
+    
+    
+    <!-- root -->
+    <root level="ERROR">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+</configuration>

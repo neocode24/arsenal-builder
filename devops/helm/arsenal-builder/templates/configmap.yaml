@@ -1,0 +1,15 @@
+# Setup env secrets 
+{{- if hasKey .Values "configMap" }}
+{{- $root := .Values.configMap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-env-configmap
+  labels:
+    app.kubernetes.io/name: {{ include "arsenal-assembler.name" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+data:
+{{- range $k,$v := $root }}
+  {{$k }}: {{ default "" $v | quote }}
+{{- end}}
+{{- end}}

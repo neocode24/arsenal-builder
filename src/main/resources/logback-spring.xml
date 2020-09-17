@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    
+    <jmxConfigurator/>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+    <!-- STDOUT appender -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+                <!-- %highlight([%d{HH:mm:ss.SSS}][%-24.-24thread][%-46.46logger][%4L][%-1.-1p] %m%n) -->
+                %highlight([%d{MM-dd HH:mm:ss.SSS}][%-18thread][%-40.40logger][%4L][%-1.-1p] %m%n)
+            </Pattern>
+        </layout>
+    </appender>
+
+            <!--<totalSizeCap>30G</totalSizeCap>-->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/arsenal.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/%d{yyMM}/%d{dd}/arsenal-%i.log</fileNamePattern>
+            <maxFileSize>5MB</maxFileSize>
+            <maxHistory>5</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- application Logger -->
+    <logger name="com.kt.arsenal" level="DEBUG" additivity="false">
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- springframework Loggers -->
+    <logger name="org.springframework.core" level="ERROR" additivity="false" >
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.springframework.beans" level="ERROR" additivity="false" >
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.springframework.context" level="ERROR" additivity="false" >
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.springframework.web" level="ERROR" additivity="false" >
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.springframework.tx" level="ERROR" additivity="false" >
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.springframework.jdbc" level="ERROR" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <!-- jdbc loggers -->
+    <logger name="jdbc.sqltiming" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+   <logger name="jdbc.sqlonly" level="ERROR"  additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="jdbc.resultsettable" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.apache.ibatis" level="ERROR" additivity="false">
+       <appender-ref ref="STDOUT" />
+    </logger>
+
+    <!-- connection pool -->
+    <logger name="com.zaxxer.hikari" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT"/>
+    </logger>
+
+    <!-- root -->
+    <root level="ERROR">
+        <appender-ref ref="FILE"/>
+        <appender-ref ref="STDOUT" />
+    </root>
+
+</configuration>

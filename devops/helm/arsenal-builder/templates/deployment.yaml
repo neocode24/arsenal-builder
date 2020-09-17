@@ -1,0 +1,91 @@
+{{- $fullName := .Release.Name -}}
+{{- $values := .Values }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $fullName }}
+  labels:
+{{ include "arsenal-assembler.labels" . | indent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "arsenal-assembler.name" . }}
+      app.kubernetes.io/instance: {{ $fullName }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "arsenal-assembler.name" . }}
+        app.kubernetes.io/instance: {{ $fullName }}
+    spec:
+    {{- with .Values.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.global.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      containers:
+      {{- range .Values.containers }}
+        - name: {{ .name }}
+          {{- $versionStart := $.Values.version|trunc 7 }}
+          {{- if eq $versionStart "sha256:" }}
+          {{ $changedVersion := printf "@%s" $.Values.version -}}
+          image: {{ .image.name| replace ":${version}" $changedVersion }}
+          {{- else }}
+          image: {{ .image.name| replace "${version}" $.Values.version }}
+          {{- end }}
+          
+          imagePullPolicy: {{ .image.pullPolicy }}
+
+          {{- if hasKey . "ports" }}
+          ports:
+          {{ toYaml .ports | nindent 12 }}
+          {{- end }}
+
+          {{- if hasKey $values "configMap" }}
+          {{- if or $values }}
+          envFrom:
+          {{- if $values }}
+          - configMapRef:
+              name: {{ $fullName }}-env-configmap
+          {{- end }}
+          {{- end }}
+          {{- end }}
+
+          {{- if hasKey . "livenessProbe" }}
+          {{- if .livenessProbe.enabled }}
+          livenessProbe:
+            {{ toYaml .livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- end }}
+
+          {{- if hasKey . "readinessProbe" }}
+          {{- if .readinessProbe.enabled }}
+          readinessProbe:
+            {{ toYaml .readinessProbe | nindent 12 }}
+          {{- end }}
+          {{- end }}
+
+          {{- if hasKey . "resources" }}
+          resources:
+            {{- toYaml .resources | nindent 12 }}
+          {{- end }}
+      {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}

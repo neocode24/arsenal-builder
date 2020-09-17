@@ -1,0 +1,32 @@
+{{- if false -}}
+{{- $fullName := .Release.Name -}}
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: {{ $fullName }}
+  labels:
+{{ include "arsenal-assembler.labels" . | indent 4 }}
+  {{- with .Values.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+{{- if index .Values.ingress.hosts 0 }}
+  host: {{ (index .Values.ingress.hosts 0).host  }}
+  path: {{ (index  (index .Values.ingress.hosts 0).paths 0) }}
+  port:
+    targetPort: http
+  to:
+    kind: Service
+    name: {{ $fullName }}
+    weight: 100
+  wildcardPolicy: None
+{{- if .Values.ingress.tls }}
+  tls:
+  {{- if index .Values.ingress.tls 0 }} 
+    {{- toYaml index .Values.ingress.tls 0 | nindent 4 }}
+  {{- end }}
+{{- end }}
+
+{{- end }}
+{{- end }}

@@ -1,0 +1,125 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.25">
+    <actions/>
+    <description>Build, Dockerize</description>
+    <keepDependencies>false</keepDependencies>
+    <properties>
+        <hudson.security.AuthorizationMatrixProperty>
+            <inheritanceStrategy class="org.jenkinsci.plugins.matrixauth.inheritance.InheritParentStrategy"/>
+            <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create:82022961</permission>
+            <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Create:강우식</permission>
+            <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete:82022961</permission>
+            <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Delete:강우식</permission>
+            <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains:82022961</permission>
+            <permission>com.cloudbees.plugins.credentials.CredentialsProvider.ManageDomains:강우식</permission>
+            <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update:82022961</permission>
+            <permission>com.cloudbees.plugins.credentials.CredentialsProvider.Update:강우식</permission>
+            <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View:82022961</permission>
+            <permission>com.cloudbees.plugins.credentials.CredentialsProvider.View:강우식</permission>
+            <permission>hudson.model.Item.Build:82022961</permission>
+            <permission>hudson.model.Item.Build:강우식</permission>
+            <permission>hudson.model.Item.Cancel:82022961</permission>
+            <permission>hudson.model.Item.Cancel:강우식</permission>
+            <permission>hudson.model.Item.Configure:82022961</permission>
+            <permission>hudson.model.Item.Configure:강우식</permission>
+            <permission>hudson.model.Item.Delete:82022961</permission>
+            <permission>hudson.model.Item.Delete:강우식</permission>
+            <permission>hudson.model.Item.Discover:82022961</permission>
+            <permission>hudson.model.Item.Discover:강우식</permission>
+            <permission>hudson.model.Item.Move:82022961</permission>
+            <permission>hudson.model.Item.Move:강우식</permission>
+            <permission>hudson.model.Item.Read:82022961</permission>
+            <permission>hudson.model.Item.Read:강우식</permission>
+            <permission>hudson.model.Item.Workspace:82022961</permission>
+            <permission>hudson.model.Item.Workspace:강우식</permission>
+            <permission>hudson.model.Run.Delete:82022961</permission>
+            <permission>hudson.model.Run.Delete:강우식</permission>
+            <permission>hudson.model.Run.Replay:82022961</permission>
+            <permission>hudson.model.Run.Replay:강우식</permission>
+            <permission>hudson.model.Run.Update:82022961</permission>
+            <permission>hudson.model.Run.Update:강우식</permission>
+            <permission>hudson.scm.SCM.Tag:82022961</permission>
+            <permission>hudson.scm.SCM.Tag:강우식</permission>
+        </hudson.security.AuthorizationMatrixProperty>
+        <io.fabric8.jenkins.openshiftsync.BuildConfigProjectProperty plugin="openshift-sync@1.0.27">
+            <uid></uid>
+            <namespace></namespace>
+            <name></name>
+            <resourceVersion></resourceVersion>
+        </io.fabric8.jenkins.openshiftsync.BuildConfigProjectProperty>
+        <org.jenkinsci.plugins.workflow.job.properties.DisableConcurrentBuildsJobProperty/>
+        <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.11">
+            <gitLabConnection>gitlab</gitLabConnection>
+        </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
+        <org.thoughtslive.jenkins.plugins.hubot.config.HubotJobProperty plugin="hubot-steps@2.0.5">
+            <siteNames></siteNames>
+            <enableNotifications>false</enableNotifications>
+        </org.thoughtslive.jenkins.plugins.hubot.config.HubotJobProperty>
+        <jenkins.model.BuildDiscarderProperty>
+            <strategy class="hudson.tasks.LogRotator">
+                <daysToKeep>-1</daysToKeep>
+                <numToKeep>5</numToKeep>
+                <artifactDaysToKeep>-1</artifactDaysToKeep>
+                <artifactNumToKeep>-1</artifactNumToKeep>
+            </strategy>
+        </jenkins.model.BuildDiscarderProperty>
+        <hudson.model.ParametersDefinitionProperty>
+            <parameterDefinitions>
+                <net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition plugin="git-parameter@0.9.10">
+                    <name>branchName</name>
+                    <description>git의 Branch 중 빌드할 대상 Branch 를 선택 한다.</description>
+                    <uuid>33b5f637-245e-4282-86b6-d3124c44dd15</uuid>
+                    <type>PT_BRANCH</type>
+                    <branch></branch>
+                    <tagFilter>*</tagFilter>
+                    <branchFilter>*</branchFilter>
+                    <sortMode>ASCENDING_SMART</sortMode>
+                    <defaultValue>origin/master</defaultValue>
+                    <selectedValue>TOP</selectedValue>
+                    <quickFilterEnabled>false</quickFilterEnabled>
+                    <listSize>5</listSize>
+                </net.uaznia.lukanus.hudson.plugins.gitparameter.GitParameterDefinition>
+                <hudson.model.BooleanParameterDefinition>
+                    <name>freshStart</name>
+                    <description>Git Source Checkout시에 임시 저장소에서 이전 변경 분을 제거하고, 전체 Source를 새롭게 다운로드 받고 시작합니다.
+(AP코드에 문제가 없으나, 빌드 시에 Git Checkout 이 되지 않는 문제가 있는 경우에 적용하면, 해소 될 수 있습니다. Build 시간이 전체 코드 다운로드 시간만큼 증가됩니다.)</description>
+                    <defaultValue>false</defaultValue>
+                </hudson.model.BooleanParameterDefinition>
+                <hudson.model.BooleanParameterDefinition>
+                    <name>unitTestEnable</name>
+                    <description>unit Test 실행 여부</description>
+                    <defaultValue>false</defaultValue>
+                </hudson.model.BooleanParameterDefinition>
+            </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+    </properties>
+    <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.56">
+        <scm class="hudson.plugins.git.GitSCM" plugin="git@3.9.3">
+            <configVersion>2</configVersion>
+            <userRemoteConfigs>
+                <hudson.plugins.git.UserRemoteConfig>
+                    <url>http://git.cz-dev.container.kt.co.kr/arsenal-suite/arsenal/arsenal-builder.git</url>
+                    <credentialsId>git-credentials</credentialsId>
+                </hudson.plugins.git.UserRemoteConfig>
+            </userRemoteConfigs>
+            <branches>
+                <hudson.plugins.git.BranchSpec>
+                    <name>${branchName}</name>
+                </hudson.plugins.git.BranchSpec>
+            </branches>
+            <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+            <browser class="hudson.plugins.git.browser.GitLab">
+                <url>http://git.cz-dev.container.kt.co.kr</url>
+                <version>11.5</version>
+            </browser>
+            <submoduleCfg class="list"/>
+            <extensions>
+                <hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
+            </extensions>
+        </scm>
+        <scriptPath>./devops/jenkins/dockerize.groovy</scriptPath>
+        <lightweight>false</lightweight>
+    </definition>
+    <triggers/>
+    <disabled>false</disabled>
+</flow-definition>
