@@ -135,7 +135,7 @@ podTemplate(label: label, serviceAccount: 'tiller', namespace: 'devops',
 
                 try {
                     withCredentials([
-                        [$class: 'UsernamePasswordMultiBinding', credentialsId: 'external-gitlab-token', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD']
+                        [$class: 'UsernamePasswordMultiBinding', credentialsId: 'external-gitlab', usernameVariable: 'GIT_USERNAME', passwordVariable: 'GIT_PASSWORD']
                         ]) {
                         sh("git config credential.username ${env.GIT_USERNAME}")
                         sh("git config credential.helper '!echo password=\$GIT_PASSWORD; echo'")
