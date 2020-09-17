@@ -9,12 +9,15 @@ buildscript {
     ext {
         springBootVersion = '2.1.6.RELEASE'
         BUILD_VERSION = new Date().format("yyyyMMddHHmmss")
-        ipcNexusUrl = 'http://nexus-repository.cz-dev.container.kt.co.kr/nexus3/repository/public'
-        //ipcNexusUrl = 'http://nexus-repository.cz-dev.container.kt.co.kr/nexus3/repository/gradle-proxy'
+        mavenUrl = 'https://repo1.maven.org/maven2/'
+        gradleUrl = 'https://plugins.gradle.org/m2/'
     }
     repositories {
         maven {
-            url "${ipcNexusUrl}"
+            url "${mavenUrl}"
+        }
+        maven {
+            url "${gradleUrl}"
         }
     }
     dependencies {
@@ -38,7 +41,10 @@ sourceCompatibility = 1.8
 
 repositories {
     maven {
-        url "${ipcNexusUrl}"
+        url "${mavenUrl}"
+    }
+    maven {
+        url "${gradleUrl}"
     }
 }
 
