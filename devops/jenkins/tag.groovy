@@ -123,6 +123,13 @@ podTemplate(label: label, serviceAccount: 'tiller', namespace: 'devops',
 
                         sh "docker build -t ${pushRegistry}/${image}:${milestone} -f devops/jenkins/Dockerfile --build-arg sourceFile=`find build/libs -name '*.jar' | head -n 1` ."
                         sh "docker push ${pushRegistry}/${image}:${milestone}"
+
+                        sh "docker tag ${pushRegistry}/${image}:${milestone} docker-registry.default.svc:5000/${image}:latest"
+                        sh "docker push docker-registry.default.svc:5000/${image}:latest"
+
+                        sh "docker tag ${pushRegistry}/${image}:${milestone} docker-registry.default.svc:5000/${image}:${milestone}"
+                        sh "docker push docker-registry.default.svc:5000/${image}:${milestone}"
+
                         sh "docker tag ${pushRegistry}/${image}:${milestone} ${pushRegistry}/${image}:latest"
                         sh "docker push ${pushRegistry}/${image}:latest"
                         sh "docker rmi ${pushRegistry}/${image}:${milestone}"
