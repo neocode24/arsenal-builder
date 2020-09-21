@@ -1,9 +1,9 @@
-{{- if false -}}
+{{- if .Values.ingress.enabled -}}
 {{- $fullName := .Release.Name -}}
 apiVersion: route.openshift.io/v1
 kind: Route
 metadata:
-  name: {{ $fullName }}
+  name: {{ .Values.app }}
   labels:
 {{ include "arsenal-assembler.labels" . | indent 4 }}
   {{- with .Values.ingress.annotations }}

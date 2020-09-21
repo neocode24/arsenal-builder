@@ -3,7 +3,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $fullName }}
+  name: {{ .Values.app }}
   labels:
 {{ include "arsenal-assembler.labels" . | indent 4 }}
 spec:
@@ -53,7 +53,7 @@ spec:
           envFrom:
           {{- if $values }}
           - configMapRef:
-              name: {{ $fullName }}-env-configmap
+              name: {{ $values.app }}-env-configmap
           {{- end }}
           {{- end }}
           {{- end }}
