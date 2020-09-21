@@ -1,9 +1,9 @@
-{{- if .Values.ingress.enabled -}}
+{{- if false -}}
 {{- $fullName := .Release.Name -}}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: {{ $fullName }}
+  name: {{ .Values.app }}
   labels:
 {{ include "arsenal-assembler.labels" . | indent 4 }}
   {{- with .Values.ingress.annotations }}

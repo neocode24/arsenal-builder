@@ -4,12 +4,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ $.Values.app }}-env-configmap
+  name: {{ .Values.app }}-env-configmap
   labels:
-    app: {{ $.Values.app }}
     app.kubernetes.io/name: {{ include "arsenal-assembler.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}
-    release: {{ .Release.Name }}
 data:
 {{- range $k,$v := $root }}
   {{$k }}: {{ default "" $v | quote }}
