@@ -1,6 +1,7 @@
 # Created by .ignore support plugin (hsz.mobi)
 
 .github/
+.github/workflows
 
 ### Junit package
 src/test/
